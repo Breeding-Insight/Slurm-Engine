@@ -37,4 +37,4 @@ To use the Slurm Engine app locally, follow these steps:
 
    ```r
    library(shiny)
-runApp("app_directory_path")  # Replace with your app directory path
+   runApp("app_directory_path")  # Replace with your app directory path
