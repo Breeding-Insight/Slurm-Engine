@@ -29,8 +29,12 @@ To use the Slurm Engine app locally, follow these steps:
    cd slurm-engine
 
 2. Install needed packages
+
+   ```r
    install.packages(c("shiny", "DT"))
 
-3. Run app
+4. Run app
+
+   ```r
    library(shiny)
 runApp("app_directory_path")  # Replace with your app directory path
