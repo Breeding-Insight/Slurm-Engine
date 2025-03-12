@@ -150,6 +150,18 @@ server <- function(input, output) {
     return(script)
   })
   
+  #Download handler
+  output$download_script <- downloadHandler(
+    filename = function() {
+      paste0(input$job_name, "_slurm.sh")
+    },
+    content = function(file) {
+      script <- output$slurm_script()  # Get the generated script
+      writeLines(script, file)
+    }
+  )
+
+
   # Render the generated interactive SLURM command
   output$interactive_command <- renderText({
     job_name <- input$interactive_job_name
