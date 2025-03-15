@@ -5,7 +5,7 @@ account: bi-slurm-generator
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 13543524
-bundleId: 9933291
+bundleId: 9948330
 url: https://bi-jcv.shinyapps.io/slurm/
 version: 1
 asMultiple: FALSE

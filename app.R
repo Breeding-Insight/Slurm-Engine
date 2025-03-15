@@ -3,56 +3,23 @@ library(DT)
 
 # Define UI for SLURM script generator with tabs
 ui <- fluidPage(
-  # Main title
-  div(
-    style = "font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 20px;",
-    "BI Slurm Engine"
-  ),
+  div(style = "font-size: 32px; font-weight: bold; text-align: center; margin-bottom: 20px;", "BI Slurm Engine"),
   
-  # Tab layout
   tabsetPanel(
-    # Job Submission tab
-    tags$div(
-      style = "text-align: center; margin-bottom: 20px;",
-      tags$img(src = "logos.png", alt = "BI Logo", style = "max-width: 35%; height: auto;")
-    ),
+    tags$div(style = "text-align: center; margin-bottom: 20px;", tags$img(src = "logos.png", alt = "BI Logo", style = "max-width: 35%; height: auto;")),
     
     tabPanel(
       HTML("<b>Generate code to submit your job</b>"),
-      wellPanel(
-        style = "background-color: #f8f9fa; padding: 15px; border-radius: 5px;",
-        h4("Some info before you start"),
-        h5("Check available resources"),
-        tags$li("Always check available resources with ", code("sinfo"), " before submitting a job."),
-        h5("General guidelines for RAM per core:"),
-        tags$ul(
-          tags$li("Lightweight Jobs: 2-4 GB of RAM per core."),
-          tags$li("Memory-Intensive Jobs: 8-16 GB of RAM per core."),
-          tags$li("Very High RAM Jobs: you may need to allocate more than 16 GB per core (e.g., 32 GB or more per core).")
-        ),
-        h5("Determining the number of cores:"),
-        tags$ul(
-          tags$li("Single-threaded jobs: If your job is single-threaded, allocate only 1 core."),
-          tags$li("Multi-threaded jobs: For parallel jobs, allocate as many cores as there are threads in your job.")
-        ),
-        h5("Using programs in your job:"),
-        tags$ul(
-          tags$li("Check for programs preinstalled in biohpc",
-                  tags$a("here", href = "https://biohpc.cornell.edu/lab/labsoftware.aspx", target = "_blank")),
-          tags$li("If your program or specific version is not there, slack", 
-                  tags$a("biohpc_servers", href = "https://bi-internal.slack.com/archives/C03CX3S473P", target = "_blank")),
-          
-        )
-      ),
-      
-
-      titlePanel("SLURM Script Generator"),
       sidebarLayout(
         sidebarPanel(
           textInput("job_name", "Job Name:", "my_job"),
           textInput("email", "Email address:", "@cornell.edu"),
           numericInput("memory", "Memory (GB):", 4, min = 1),
           numericInput("cpus", "Number of CPUs:", 1, min = 1),
+          div(style = "display: flex; gap: 10px;", 
+              numericInput("days", "Days:", 0, min = 0, width = "33%"),
+              numericInput("hours", "Hours:", 1, min = 0, width = "33%"),
+              numericInput("minutes", "Minutes:", 0, min = 0, width = "33%")),
           checkboxInput("gpu", "Request GPU", FALSE),
           textAreaInput("commands", "Commands to Run:", "", rows = 4),
           downloadButton("download_script", "Download SLURM Script")
@@ -64,44 +31,18 @@ ui <- fluidPage(
       )
     ),
     
-    # Interactive Session tab
-
     tabPanel(
       HTML("<b>Run Your Code Interactively</b>"),
-      wellPanel(
-        style = "background-color: #f8f9fa; padding: 15px; border-radius: 5px;",
-        h4("Some info before you start"),
-        h5("Check available resources"),
-        tags$li("Always check available resources with ", code("sinfo"), " before submitting a job."),
-        h5("General guidelines for RAM per core:"),
-        tags$ul(
-          tags$li("Lightweight Jobs: 2-4 GB of RAM per core."),
-          tags$li("Memory-Intensive Jobs: 8-16 GB of RAM per core."),
-          tags$li("Very High RAM Jobs: you may need to allocate more than 16 GB per core (e.g., 32 GB or more per core).")
-        ),
-        h5("Determining the number of cores:"),
-        tags$ul(
-          tags$li("Single-threaded jobs: If your job is single-threaded, allocate only 1 core."),
-          tags$li("Multi-threaded jobs: For parallel jobs, allocate as many cores as there are threads in your job.")
-        ),
-        h5("Using programs in your job:"),
-        tags$ul(
-          tags$li("Check for programs preinstalled in biohpc",
-                  tags$a("here", href = "https://biohpc.cornell.edu/lab/labsoftware.aspx", target = "_blank")),
-          tags$li("If your program or specific version is not there, slack", 
-                  tags$a("biohpc_servers", href = "https://bi-internal.slack.com/archives/C03CX3S473P", target = "_blank")),
-          
-        )
-      ),
-      
-    
-      titlePanel("Interactive SLURM Session"),
       sidebarLayout(
         sidebarPanel(
           textInput("interactive_job_name", "Job Name:", "interactive_test"),
           textInput("interactive_email", "Email address:", "@cornell.edu"),
           numericInput("interactive_memory", "Memory (GB):", 40, min = 1),
           numericInput("interactive_cpus", "Number of CPUs:", 4, min = 1),
+          div(style = "display: flex; gap: 10px;", 
+              numericInput("interactive_days", "Days:", 0, min = 0, width = "33%"),
+              numericInput("interactive_hours", "Hours:", 1, min = 0, width = "33%"),
+              numericInput("interactive_minutes", "Minutes:", 0, min = 0, width = "33%")),
           checkboxInput("interactive_gpu", "Request GPU", FALSE)
         ),
         mainPanel(
@@ -111,9 +52,6 @@ ui <- fluidPage(
       )
     ),
     
-    # Cheat Sheet tab
-
-    
     tabPanel(
       HTML("<b>Cheat Sheet</b>"),
       titlePanel("Useful Commands"),
@@ -121,17 +59,16 @@ ui <- fluidPage(
         DT::dataTableOutput("cheat_sheet_table")
       )
     )
-  ) # Closing tabsetPanel
+  )
 )
 
 server <- function(input, output) {
-  
-  # Render the generated SLURM script
   output$slurm_script <- renderText({
     job_name <- input$job_name
     email <- input$email
     memory <- input$memory
     cpus <- input$cpus
+    time <- sprintf("%d-%02d:%02d:00", input$days, input$hours, input$minutes)
     gpu <- ifelse(input$gpu, "--gres=gpu:1", "")
     commands <- input$commands
     
@@ -144,36 +81,35 @@ server <- function(input, output) {
       "#SBATCH --mail-user=", email, "\n",
       "#SBATCH --mem=", memory, "G\n",
       "#SBATCH --cpus-per-task=", cpus, "\n",
+      "#SBATCH --time=", time, "\n",
       gpu, "\n",
       "\n", commands
     )
     return(script)
   })
   
-  #Download handler
   output$download_script <- downloadHandler(
     filename = function() {
       paste0(input$job_name, "_slurm.sh")
     },
     content = function(file) {
-      script <- output$slurm_script()  # Get the generated script
-      writeLines(script, file)
+      writeLines(output$slurm_script(), file)
     }
   )
-
-
-  # Render the generated interactive SLURM command
+  
   output$interactive_command <- renderText({
     job_name <- input$interactive_job_name
     email <- input$interactive_email
     memory <- input$interactive_memory
     cpus <- input$interactive_cpus
+    time <- sprintf("%d-%02d:%02d:00", input$interactive_days, input$interactive_hours, input$interactive_minutes)
     gpu <- ifelse(input$interactive_gpu, "--gres=gpu:1", "")
     
     command <- paste0(
       "srun --job-name=", job_name, " ",
       "--mem=", memory, "G ",
       "--cpus-per-task=", cpus, " ",
+      "--time=", time, " ",
       gpu, " ",
       "--mail-user=", email, " ",
       "bash"
@@ -181,7 +117,6 @@ server <- function(input, output) {
     return(command)
   })
   
-  # Cheat Sheet table
   output$cheat_sheet_table <- DT::renderDataTable({
     data.frame(
       Command = c(
