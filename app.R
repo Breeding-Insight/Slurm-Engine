@@ -106,13 +106,12 @@ server <- function(input, output) {
     gpu <- ifelse(input$interactive_gpu, "--gres=gpu:1", "")
     
     command <- paste0(
-      "srun --job-name=", job_name, " ",
+      "salloc --job-name=", job_name, " ",
       "--mem=", memory, "G ",
       "--cpus-per-task=", cpus, " ",
       "--time=", time, " ",
       gpu, " ",
-      "--mail-user=", email, " ",
-      "bash"
+      "--mail-user=", email
     )
     return(command)
   })
