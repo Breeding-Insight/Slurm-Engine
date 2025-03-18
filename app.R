@@ -111,6 +111,7 @@ server <- function(input, output) {
       "--cpus-per-task=", cpus, " ",
       "--time=", time, " ",
       gpu, " ",
+      "--mail-type=ALL ",
       "--mail-user=", email
     )
     return(command)
